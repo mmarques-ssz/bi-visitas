@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel BI — Monitoramento de Turismo Brasil 2026</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+              900: '#0c4a6e',
+            },
+            slate: {
+              850: '#172033',
+              900: '#0f172a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0b1120;
+      color: #f1f5f9;
+    }
+    .glass-card {
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(51, 65, 85, 0.8);
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: rgba(100, 116, 139, 1);
+    }
+  </style>
+</head>
+<body class="min-h-screen pb-12 antialiased selection:bg-brand-500 selection:text-white">
+
+  <!-- Header Section -->
+  <header class="border-b border-slate-800 bg-slate-900/80 sticky top-0 z-50 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-brand-600 to-emerald-400 flex items-center justify-center shadow-lg shadow-brand-500/20">
+          <i class="fa-solid font-bold text-white fa-chart-line text-lg"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+            Monitoramento de Turismo Brasil <span class="bg-brand-500/20 text-brand-400 text-xs px-2.5 py-0.5 rounded-full border border-brand-500/30 font-semibold">2026</span>
+          </h1>
+          <p class="text-xs text-slate-400">Painel Executivo de Business Intelligence & Analytics Sazonal</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button onclick="resetFilters()" class="inline-flex items-center gap-2 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white px-3 py-2 rounded-lg transition border border-slate-700">
+          <i class="fa-solid fa-rotate"></i> Redefinir Filtros
+        </button>
+        <button onclick="exportToCSV()" class="inline-flex items-center gap-2 text-xs font-medium bg-brand-600 hover:bg-brand-500 text-white px-3.5 py-2 rounded-lg transition shadow-md shadow-brand-600/30 font-semibold">
+          <i class="fa-solid fa-download"></i> Exportar Dados
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
+
+    <!-- Filter Bar (Slicers) -->
+    <section class="glass-card rounded-2xl p-4 sm:p-5 shadow-xl">
+      <div class="flex items-center gap-2 mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
+        <i class="fa-solid fa-filter text-brand-500"></i> Filtros de Pesquisa & Segmentação
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Região -->
+        <div>
+          <label for="filterRegion" class="block text-xs font-medium text-slate-300 mb-1.5">Região</label>
+          <select id="filterRegion" onchange="onFilterChange()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 transition">
+            <option value="ALL">Todas as Regiões</option>
+            <option value="Centro-Oeste">Centro-Oeste</option>
+            <option value="Nordeste">Nordeste</option>
+            <option value="Sudeste">Sudeste</option>
+            <option value="Sul">Sul</option>
+          </select>
+        </div>
+
+        <!-- Destino -->
+        <div>
+          <label for="filterDestination" class="block text-xs font-medium text-slate-300 mb-1.5">Destino Turístico</label>
+          <select id="filterDestination" onchange="onFilterChange()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 transition">
+            <option value="ALL">Todos os Destinos</option>
+            <option value="Bonito">Bonito</option>
+            <option value="Caldas Novas">Caldas Novas</option>
+            <option value="Gramado">Gramado</option>
+            <option value="Ilhabela">Ilhabela</option>
+            <option value="Jericoacoara">Jericoacoara</option>
+            <option value="Ouro Preto">Ouro Preto</option>
+          </select>
+        </div>
+
+        <!-- Trimestre / Período -->
+        <div>
+          <label for="filterQuarter" class="block text-xs font-medium text-slate-300 mb-1.5">Período / Trimestre</label>
+          <select id="filterQuarter" onchange="onFilterChange()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 transition">
+            <option value="ALL">Ano Todo (Jan - Dez)</option>
+            <option value="Q1">1º Trimestre (Jan - Mar)</option>
+            <option value="Q2">2º Trimestre (Abr - Jun)</option>
+            <option value="Q3">3º Trimestre (Jul - Set)</option>
+            <option value="Q4">4º Trimestre (Out - Dez)</option>
+          </select>
+        </div>
+
+        <!-- Mês Específico -->
+        <div>
+          <label for="filterMonth" class="block text-xs font-medium text-slate-300 mb-1.5">Mês Específico</label>
+          <select id="filterMonth" onchange="onFilterChange()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 transition">
+            <option value="ALL">Todos os Meses</option>
+            <option value="1">Janeiro</option>
+            <option value="2">Fevereiro</option>
+            <option value="3">Março</option>
+            <option value="4">Abril</option>
+            <option value="5">Maio</option>
+            <option value="6">Junho</option>
+            <option value="7">Julho</option>
+            <option value="8">Agosto</option>
+            <option value="9">Setembro</option>
+            <option value="10">Outubro</option>
+            <option value="11">Novembro</option>
+            <option value="12">Dezembro</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Top KPI Cards Grid -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <!-- KPI 1 -->
+      <div class="glass-card rounded-2xl p-5 hover:border-brand-500/40 transition group">
+        <div class="flex items-center justify-between text-slate-400 mb-2">
+          <span class="text-xs font-semibold uppercase tracking-wider">Total Visitantes</span>
+          <div class="p-2 bg-blue-500/10 text-blue-400 rounded-lg group-hover:bg-blue-500/20 transition">
+            <i class="fa-solid fa-users text-sm"></i>
+          </div>
+        </div>
+        <div class="text-2xl font-extrabold text-white tracking-tight" id="kpiTotalVisitors">0</div>
+        <p class="text-xs text-slate-400 mt-1" id="kpiVisitorsSub">Acumulado no período</p>
+      </div>
+
+      <!-- KPI 2 -->
+      <div class="glass-card rounded-2xl p-5 hover:border-emerald-500/40 transition group">
+        <div class="flex items-center justify-between text-slate-400 mb-2">
+          <span class="text-xs font-semibold uppercase tracking-wider">Gasto Diário Médio</span>
+          <div class="p-2 bg-emerald-500/10 text-emerald-400 rounded-lg group-hover:bg-emerald-500/20 transition">
+            <i class="fa-solid fa-wallet text-sm"></i>
+          </div>
+        </div>
+        <div class="text-2xl font-extrabold text-white tracking-tight" id="kpiAvgDailySpend">R$ 0,00</div>
+        <p class="text-xs text-slate-400 mt-1">Por turista / dia</p>
+      </div>
+
+      <!-- KPI 3 -->
+      <div class="glass-card rounded-2xl p-5 hover:border-purple-500/40 transition group">
+        <div class="flex items-center justify-between text-slate-400 mb-2">
+          <span class="text-xs font-semibold uppercase tracking-wider">Diária Média</span>
+          <div class="p-2 bg-purple-500/10 text-purple-400 rounded-lg group-hover:bg-purple-500/20 transition">
+            <i class="fa-solid fa-hotel text-sm"></i>
+          </div>
+        </div>
+        <div class="text-2xl font-extrabold text-white tracking-tight" id="kpiAvgHotelRate">R$ 0,00</div>
+        <p class="text-xs text-slate-400 mt-1">Hospedagem por noite</p>
+      </div>
+
+      <!-- KPI 4 -->
+      <div class="glass-card rounded-2xl p-5 hover:border-amber-500/40 transition group">
+        <div class="flex items-center justify-between text-slate-400 mb-2">
+          <span class="text-xs font-semibold uppercase tracking-wider">Ocupação Média</span>
+          <div class="p-2 bg-amber-500/10 text-amber-400 rounded-lg group-hover:bg-amber-500/20 transition">
+            <i class="fa-solid fa-bed text-sm"></i>
+          </div>
+        </div>
+        <div class="text-2xl font-extrabold text-white tracking-tight" id="kpiAvgOccupancy">0.0%</div>
+        <p class="text-xs text-slate-400 mt-1">Capacidade hoteleira</p>
+      </div>
+
+      <!-- KPI 5 -->
+      <div class="glass-card rounded-2xl p-5 hover:border-rose-500/40 transition group">
+        <div class="flex items-center justify-between text-slate-400 mb-2">
+          <span class="text-xs font-semibold uppercase tracking-wider">Avaliação Média</span>
+          <div class="p-2 bg-rose-500/10 text-rose-400 rounded-lg group-hover:bg-rose-500/20 transition">
+            <i class="fa-solid fa-star text-sm"></i>
+          </div>
+        </div>
+        <div class="text-2xl font-extrabold text-white tracking-tight flex items-baseline gap-1" id="kpiAvgRating">
+          0.00 <span class="text-xs font-normal text-slate-400">/ 5.0</span>
+        </div>
+        <p class="text-xs text-amber-400 mt-1 flex items-center gap-1" id="kpiRatingStars"></p>
+      </div>
+    </section>
+
+    <!-- Visualizations Section - Grid 1 -->
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Main Trend Line & Bar Chart -->
+      <div class="glass-card rounded-2xl p-5 lg:col-span-2 flex flex-col justify-between shadow-lg">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+              <i class="fa-solid fa-chart-area text-brand-500"></i> Evolução Mensal: Volume de Visitantes vs Taxa de Ocupação
+            </h2>
+            <p class="text-xs text-slate-400">Análise sazonal integrada ao longo dos meses do ano</p>
+          </div>
+        </div>
+        <div class="relative w-full h-80">
+          <canvas id="chartTrend"></canvas>
+        </div>
+      </div>
+
+      <!-- Regional Distribution Chart -->
+      <div class="glass-card rounded-2xl p-5 flex flex-col justify-between shadow-lg">
+        <div class="mb-4">
+          <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+            <i class="fa-solid fa-pie-chart text-emerald-400"></i> Participação por Região
+          </h2>
+          <p class="text-xs text-slate-400">Distribuição do volume total de turistas</p>
+        </div>
+        <div class="relative w-full h-72 flex items-center justify-center">
+          <canvas id="chartRegion"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Visualizations Section - Grid 2 -->
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Visitor Ranking Chart -->
+      <div class="glass-card rounded-2xl p-5 shadow-lg">
+        <div class="mb-4">
+          <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+            <i class="fa-solid fa-trophy text-amber-400"></i> Ranking de Visitantes (mil)
+          </h2>
+          <p class="text-xs text-slate-400">Comparativo total acumulado por destino</p>
+        </div>
+        <div class="relative w-full h-72">
+          <canvas id="chartRanking"></canvas>
+        </div>
+      </div>
+
+      <!-- Daily Spend vs Hotel Rate Chart -->
+      <div class="glass-card rounded-2xl p-5 shadow-lg">
+        <div class="mb-4">
+          <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+            <i class="fa-solid fa-money-bill-wave text-purple-400"></i> Gasto Diário vs Diária Média (R$)
+          </h2>
+          <p class="text-xs text-slate-400">Comparação financeira por município</p>
+        </div>
+        <div class="relative w-full h-72">
+          <canvas id="chartFinancial"></canvas>
+        </div>
+      </div>
+
+      <!-- Performance Matrix Scatter Chart -->
+      <div class="glass-card rounded-2xl p-5 shadow-lg">
+        <div class="mb-4">
+          <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+            <i class="fa-solid fa-cubes-stacked text-rose-400"></i> Matriz Gasto vs Satisfação
+          </h2>
+          <p class="text-xs text-slate-400">Correlação entre despesa diária e nota dada pelo turista</p>
+        </div>
+        <div class="relative w-full h-72">
+          <canvas id="chartMatrix"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Detailed Data Table Section -->
+    <section class="glass-card rounded-2xl p-5 shadow-xl">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+        <div>
+          <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+            <i class="fa-solid fa-table text-brand-400"></i> Consolidação por Destino Turístico
+          </h2>
+          <p class="text-xs text-slate-400">Métricas consolidadas com formatação condicional baseada nos filtros ativos</p>
+        </div>
+        <span id="tableRecordCount" class="text-xs bg-slate-800 text-slate-300 px-3 py-1 rounded-full border border-slate-700 w-fit">
+          Exibindo 6 destinos
+        </span>
+      </div>
+
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left text-sm text-slate-300">
+          <thead class="bg-slate-900/90 text-xs font-semibold uppercase tracking-wider text-slate-400 border-b border-slate-700">
+            <tr>
+              <th scope="col" class="py-3.5 px-4">Destino</th>
+              <th scope="col" class="py-3.5 px-4">Região</th>
+              <th scope="col" class="py-3.5 px-4 text-right">Total Visitantes (mil)</th>
+              <th scope="col" class="py-3.5 px-4 text-right">Gasto Diário (R$)</th>
+              <th scope="col" class="py-3.5 px-4 text-right">Diária Média (R$)</th>
+              <th scope="col" class="py-3.5 px-4 text-center">% Ocupação</th>
+              <th scope="col" class="py-3.5 px-4 text-center">Avaliação Média</th>
+            </tr>
+          </thead>
+          <tbody id="dataTableBody" class="divide-y divide-slate-800 font-medium">
+            <!-- Rows injected via JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- JavaScript Code logic & Data injection -->
+  <script>
+    // Full Data Array matching 72 entries from dataset
+    const rawData = [
+      // Ilhabela
+      { month: 1, destination: "Ilhabela", region: "Sudeste", visitors: 33.2, dailySpend: 200.79, hotelRate: 214.07, occupancy: 67.17, rating: 4.42 },
+      { month: 2, destination: "Ilhabela", region: "Sudeste", visitors: 36.8, dailySpend: 204.88, hotelRate: 222.85, occupancy: 67.99, rating: 4.47 },
+      { month: 3, destination: "Ilhabela", region: "Sudeste", visitors: 34.4, dailySpend: 212.32, hotelRate: 232.04, occupancy: 64.28, rating: 4.39 },
+      { month: 4, destination: "Ilhabela", region: "Sudeste", visitors: 31.0, dailySpend: 209.15, hotelRate: 224.72, occupancy: 56.54, rating: 4.36 },
+      { month: 5, destination: "Ilhabela", region: "Sudeste", visitors: 28.8, dailySpend: 189.83, hotelRate: 215.82, occupancy: 50.62, rating: 4.31 },
+      { month: 6, destination: "Ilhabela", region: "Sudeste", visitors: 29.1, dailySpend: 192.40, hotelRate: 200.86, occupancy: 50.09, rating: 4.34 },
+      { month: 7, destination: "Ilhabela", region: "Sudeste", visitors: 35.0, dailySpend: 222.69, hotelRate: 222.40, occupancy: 68.54, rating: 4.48 },
+      { month: 8, destination: "Ilhabela", region: "Sudeste", visitors: 33.5, dailySpend: 198.99, hotelRate: 207.73, occupancy: 55.73, rating: 4.43 },
+      { month: 9, destination: "Ilhabela", region: "Sudeste", visitors: 33.0, dailySpend: 211.46, hotelRate: 227.62, occupancy: 62.90, rating: 4.34 },
+      { month: 10, destination: "Ilhabela", region: "Sudeste", visitors: 32.7, dailySpend: 214.83, hotelRate: 220.08, occupancy: 63.87, rating: 4.49 },
+      { month: 11, destination: "Ilhabela", region: "Sudeste", visitors: 34.9, dailySpend: 222.25, hotelRate: 228.69, occupancy: 68.49, rating: 4.54 },
+      { month: 12, destination: "Ilhabela", region: "Sudeste", visitors: 48.3, dailySpend: 233.96, hotelRate: 253.39, occupancy: 88.78, rating: 4.50 },
+
+      // Caldas Novas
+      { month: 1, destination: "Caldas Novas", region: "Centro-Oeste", visitors: 37.5, dailySpend: 305.12, hotelRate: 412.30, occupancy: 82.40, rating: 4.45 },
+      { month: 2, destination: "Caldas Novas", region: "Centro-Oeste", visitors: 34.2, dailySpend: 289.40, hotelRate: 395.10, occupancy: 75.10, rating: 4.42 },
+      { month: 3, destination: "Caldas Novas", region: "Centro-Oeste", visitors: 31.0, dailySpend: 280.50, hotelRate: 380.00, occupancy: 68.30, rating: 4.40 },
+      { month: 4, destination: "Caldas Novas", region: "Centro-Oeste", visitors: 33.5, dailySpend: 290.00, hotelRate: 390.50, occupancy: 71.20, rating: 4.43 },
+      { month: 5, destination: "Caldas Novas", region: "Centro-Oeste", visitors: 29.8, dailySpend: 275.60, hotelRate: 370.20, occupancy: 65.40, rating: 4.38 },
+      { month: 6, destination: "Caldas Novas", region: "Centro-Oeste", visitors: 32.0, dailySpend: 285.30, hotelRate: 385.00, occupancy: 70.80, rating: 4.41 },
+      { month: 7, destination: "Caldas Novas", region: "Centro-Oeste", visitors: 42.1, dailySpend: 330.40, hotelRate: 445.00, occupancy: 92.50, rating: 4.55 },
+      { month: 8, destination: "Caldas Novas", region: "Centro-Oeste", visitors: 31.5, dailySpend: 282.10, hotelRate: 382.00, occupancy: 69.10, rating: 4.40 },
+      { month: 9, destination: "Caldas Novas", region: "Centro-Oeste", visitors: 30.2, dailySpend: 278.40, hotelRate: 376.50, occupancy: 66.80, rating: 4.39 },
+      { month: 10, destination: "Caldas Novas", region: "Centro-Oeste", visitors: 32.8, dailySpend: 288.90, hotelRate: 389.00, occupancy: 70.50, rating: 4.44 },
+      { month: 11, destination: "Caldas Novas", region: "Centro-Oeste", visitors: 34.1, dailySpend: 295.20, hotelRate: 398.40, occupancy: 74.20, rating: 4.46 },
+      { month: 12, destination: "Caldas Novas", region: "Centro-Oeste", visitors: 44.6, dailySpend: 346.18, hotelRate: 492.54, occupancy: 96.18, rating: 4.64 },
+
+      // Jericoacoara
+      { month: 1, destination: "Jericoacoara", region: "Nordeste", visitors: 35.2, dailySpend: 192.40, hotelRate: 260.50, occupancy: 76.20, rating: 4.56 },
+      { month: 2, destination: "Jericoacoara", region: "Nordeste", visitors: 33.8, dailySpend: 185.30, hotelRate: 250.20, occupancy: 72.10, rating: 4.54 },
+      { month: 3, destination: "Jericoacoara", region: "Nordeste", visitors: 29.5, dailySpend: 178.60, hotelRate: 242.00, occupancy: 64.50, rating: 4.52 },
+      { month: 4, destination: "Jericoacoara", region: "Nordeste", visitors: 30.1, dailySpend: 180.20, hotelRate: 245.00, occupancy: 66.00, rating: 4.55 },
+      { month: 5, destination: "Jericoacoara", region: "Nordeste", visitors: 28.2, dailySpend: 172.50, hotelRate: 235.80, occupancy: 61.20, rating: 4.50 },
+      { month: 6, destination: "Jericoacoara", region: "Nordeste", visitors: 31.4, dailySpend: 184.00, hotelRate: 248.50, occupancy: 68.90, rating: 4.53 },
+      { month: 7, destination: "Jericoacoara", region: "Nordeste", visitors: 39.8, dailySpend: 210.50, hotelRate: 285.00, occupancy: 87.40, rating: 4.68 },
+      { month: 8, destination: "Jericoacoara", region: "Nordeste", visitors: 33.1, dailySpend: 186.20, hotelRate: 252.00, occupancy: 73.00, rating: 4.60 },
+      { month: 9, destination: "Jericoacoara", region: "Nordeste", visitors: 32.0, dailySpend: 182.40, hotelRate: 247.80, occupancy: 70.10, rating: 4.61 },
+      { month: 10, destination: "Jericoacoara", region: "Nordeste", visitors: 31.2, dailySpend: 181.00, hotelRate: 246.00, occupancy: 68.50, rating: 4.58 },
+      { month: 11, destination: "Jericoacoara", region: "Nordeste", visitors: 33.0, dailySpend: 188.50, hotelRate: 255.20, occupancy: 73.80, rating: 4.63 },
+      { month: 12, destination: "Jericoacoara", region: "Nordeste", visitors: 30.2, dailySpend: 200.18, hotelRate: 277.98, occupancy: 87.22, rating: 4.70 },
+
+      // Gramado
+      { month: 1, destination: "Gramado", region: "Sul", visitors: 24.5, dailySpend: 270.50, hotelRate: 450.20, occupancy: 70.50, rating: 4.46 },
+      { month: 2, destination: "Gramado", region: "Sul", visitors: 23.2, dailySpend: 265.10, hotelRate: 440.00, occupancy: 66.20, rating: 4.44 },
+      { month: 3, destination: "Gramado", region: "Sul", visitors: 21.0, dailySpend: 258.40, hotelRate: 425.50, occupancy: 60.10, rating: 4.42 },
+      { month: 4, destination: "Gramado", region: "Sul", visitors: 23.8, dailySpend: 268.00, hotelRate: 445.00, occupancy: 68.40, rating: 4.47 },
+      { month: 5, destination: "Gramado", region: "Sul", visitors: 25.1, dailySpend: 272.30, hotelRate: 455.20, occupancy: 71.00, rating: 4.45 },
+      { month: 6, destination: "Gramado", region: "Sul", visitors: 32.5, dailySpend: 310.20, hotelRate: 510.00, occupancy: 86.50, rating: 4.52 },
+      { month: 7, destination: "Gramado", region: "Sul", visitors: 38.2, dailySpend: 345.80, hotelRate: 532.10, occupancy: 93.20, rating: 4.60 },
+      { month: 8, destination: "Gramado", region: "Sul", visitors: 26.0, dailySpend: 275.40, hotelRate: 460.00, occupancy: 74.10, rating: 4.48 },
+      { month: 9, destination: "Gramado", region: "Sul", visitors: 22.5, dailySpend: 262.10, hotelRate: 435.00, occupancy: 63.80, rating: 4.45 },
+      { month: 10, destination: "Gramado", region: "Sul", visitors: 24.0, dailySpend: 269.50, hotelRate: 448.00, occupancy: 67.20, rating: 4.46 },
+      { month: 11, destination: "Gramado", region: "Sul", visitors: 27.5, dailySpend: 285.20, hotelRate: 470.10, occupancy: 76.50, rating: 4.50 },
+      { month: 12, destination: "Gramado", region: "Sul", visitors: 38.4, dailySpend: 318.13, hotelRate: 534.67, occupancy: 90.42, rating: 4.53 },
+
+      // Bonito
+      { month: 1, destination: "Bonito", region: "Centro-Oeste", visitors: 24.2, dailySpend: 320.10, hotelRate: 335.20, occupancy: 70.80, rating: 4.02 },
+      { month: 2, destination: "Bonito", region: "Centro-Oeste", visitors: 23.0, dailySpend: 312.40, hotelRate: 328.00, occupancy: 66.50, rating: 4.00 },
+      { month: 3, destination: "Bonito", region: "Centro-Oeste", visitors: 20.5, dailySpend: 305.20, hotelRate: 320.10, occupancy: 59.80, rating: 3.98 },
+      { month: 4, destination: "Bonito", region: "Centro-Oeste", visitors: 21.2, dailySpend: 310.00, hotelRate: 325.00, occupancy: 61.50, rating: 4.01 },
+      { month: 5, destination: "Bonito", region: "Centro-Oeste", visitors: 19.8, dailySpend: 300.50, hotelRate: 315.20, occupancy: 57.20, rating: 3.95 },
+      { month: 6, destination: "Bonito", region: "Centro-Oeste", visitors: 21.5, dailySpend: 315.00, hotelRate: 330.00, occupancy: 62.80, rating: 4.00 },
+      { month: 7, destination: "Bonito", region: "Centro-Oeste", visitors: 28.5, dailySpend: 369.26, hotelRate: 388.42, occupancy: 85.92, rating: 4.18 },
+      { month: 8, destination: "Bonito", region: "Centro-Oeste", visitors: 24.1, dailySpend: 322.00, hotelRate: 338.00, occupancy: 70.20, rating: 4.05 },
+      { month: 9, destination: "Bonito", region: "Centro-Oeste", visitors: 22.8, dailySpend: 318.50, hotelRate: 332.10, occupancy: 66.40, rating: 4.06 },
+      { month: 10, destination: "Bonito", region: "Centro-Oeste", visitors: 22.0, dailySpend: 314.00, hotelRate: 329.00, occupancy: 64.10, rating: 4.03 },
+      { month: 11, destination: "Bonito", region: "Centro-Oeste", visitors: 23.5, dailySpend: 325.00, hotelRate: 340.50, occupancy: 69.50, rating: 4.08 },
+      { month: 12, destination: "Bonito", region: "Centro-Oeste", visitors: 26.0, dailySpend: 339.92, hotelRate: 363.15, occupancy: 81.85, rating: 4.11 },
+
+      // Ouro Preto
+      { month: 1, destination: "Ouro Preto", region: "Sudeste", visitors: 17.0, dailySpend: 185.20, hotelRate: 348.00, occupancy: 69.50, rating: 4.35 },
+      { month: 2, destination: "Ouro Preto", region: "Sudeste", visitors: 17.8, dailySpend: 188.00, hotelRate: 352.10, occupancy: 71.20, rating: 4.37 },
+      { month: 3, destination: "Ouro Preto", region: "Sudeste", visitors: 19.0, dailySpend: 195.40, hotelRate: 362.50, occupancy: 75.80, rating: 4.41 },
+      { month: 4, destination: "Ouro Preto", region: "Sudeste", visitors: 17.4, dailySpend: 186.50, hotelRate: 350.00, occupancy: 70.10, rating: 4.36 },
+      { month: 5, destination: "Ouro Preto", region: "Sudeste", visitors: 18.3, dailySpend: 167.92, hotelRate: 313.20, occupancy: 59.50, rating: 4.28 },
+      { month: 6, destination: "Ouro Preto", region: "Sudeste", visitors: 15.9, dailySpend: 170.10, hotelRate: 320.00, occupancy: 61.20, rating: 4.30 },
+      { month: 7, destination: "Ouro Preto", region: "Sudeste", visitors: 21.0, dailySpend: 198.50, hotelRate: 375.00, occupancy: 79.80, rating: 4.45 },
+      { month: 8, destination: "Ouro Preto", region: "Sudeste", visitors: 17.5, dailySpend: 180.20, hotelRate: 338.00, occupancy: 67.40, rating: 4.34 },
+      { month: 9, destination: "Ouro Preto", region: "Sudeste", visitors: 17.2, dailySpend: 178.90, hotelRate: 332.00, occupancy: 65.80, rating: 4.33 },
+      { month: 10, destination: "Ouro Preto", region: "Sudeste", visitors: 17.9, dailySpend: 182.40, hotelRate: 341.00, occupancy: 68.20, rating: 4.38 },
+      { month: 11, destination: "Ouro Preto", region: "Sudeste", visitors: 18.6, dailySpend: 189.00, hotelRate: 354.00, occupancy: 71.90, rating: 4.40 },
+      { month: 12, destination: "Ouro Preto", region: "Sudeste", visitors: 18.6, dailySpend: 190.28, hotelRate: 375.20, occupancy: 69.89, rating: 4.42 }
+    ];
+
+    const monthNames = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+    const destinationColors = {
+      "Caldas Novas": "#0ea5e9", // Sky Blue
+      "Ilhabela": "#10b981",    // Emerald
+      "Jericoacoara": "#f59e0b", // Amber
+      "Gramado": "#8b5cf6",     // Purple
+      "Bonito": "#ec4899",      // Pink
+      "Ouro Preto": "#6366f1"   // Indigo
+    };
+
+    // Chart instances references
+    let chartTrend, chartRegion, chartRanking, chartFinancial, chartMatrix;
+
+    // Formatters
+    const fmtCurrency = (val) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
+    const fmtNumber = (val) => new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(val);
+
+    // Filter Logic
+    function getFilteredData() {
+      const region = document.getElementById('filterRegion').value;
+      const dest = document.getElementById('filterDestination').value;
+      const quarter = document.getElementById('filterQuarter').value;
+      const month = document.getElementById('filterMonth').value;
+
+      return rawData.filter(item => {
+        if (region !== 'ALL' && item.region !== region) return false;
+        if (dest !== 'ALL' && item.destination !== dest) return false;
+        
+        if (quarter !== 'ALL') {
+          if (quarter === 'Q1' && !(item.month >= 1 && item.month <= 3)) return false;
+          if (quarter === 'Q2' && !(item.month >= 4 && item.month <= 6)) return false;
+          if (quarter === 'Q3' && !(item.month >= 7 && item.month <= 9)) return false;
+          if (quarter === 'Q4' && !(item.month >= 10 && item.month <= 12)) return false;
+        }
+
+        if (month !== 'ALL' && item.month !== parseInt(month)) return false;
+
+        return true;
+      });
+    }
+
+    // Reset Filters
+    function resetFilters() {
+      document.getElementById('filterRegion').value = 'ALL';
+      document.getElementById('filterDestination').value = 'ALL';
+      document.getElementById('filterQuarter').value = 'ALL';
+      document.getElementById('filterMonth').value = 'ALL';
+      onFilterChange();
+    }
+
+    // Update Dashboard Logic
+    function onFilterChange() {
+      const data = getFilteredData();
+      updateKPIs(data);
+      updateCharts(data);
+      updateTable(data);
+    }
+
+    // KPI Calculation
+    function updateKPIs(data) {
+      if (data.length === 0) {
+        document.getElementById('kpiTotalVisitors').innerText = "0,0 mil";
+        document.getElementById('kpiAvgDailySpend').innerText = "R$ 0,00";
+        document.getElementById('kpiAvgHotelRate').innerText = "R$ 0,00";
+        document.getElementById('kpiAvgOccupancy').innerText = "0,0%";
+        document.getElementById('kpiAvgRating').innerHTML = `0,00 <span class="text-xs font-normal text-slate-400">/ 5.0</span>`;
+        document.getElementById('kpiRatingStars').innerText = "Sem dados";
+        return;
+      }
+
+      const totalVisitors = data.reduce((acc, curr) => acc + curr.visitors, 0);
+      const avgSpend = data.reduce((acc, curr) => acc + curr.dailySpend, 0) / data.length;
+      const avgHotel = data.reduce((acc, curr) => acc + curr.hotelRate, 0) / data.length;
+      const avgOcc = data.reduce((acc, curr) => acc + curr.occupancy, 0) / data.length;
+      const avgRating = data.reduce((acc, curr) => acc + curr.rating, 0) / data.length;
+
+      document.getElementById('kpiTotalVisitors').innerText = `${fmtNumber(totalVisitors)} mil`;
+      document.getElementById('kpiAvgDailySpend').innerText = fmtCurrency(avgSpend);
+      document.getElementById('kpiAvgHotelRate').innerText = fmtCurrency(avgHotel);
+      document.getElementById('kpiAvgOccupancy').innerText = `${fmtNumber(avgOcc)}%`;
+      document.getElementById('kpiAvgRating').innerHTML = `${avgRating.toFixed(2)} <span class="text-xs font-normal text-slate-400">/ 5.0</span>`;
+
+      // Stars icon generation
+      const starCount = Math.round(avgRating);
+      let starsHtml = '';
+      for (let i = 1; i <= 5; i++) {
+        if (i <= starCount) {
+          starsHtml += '<i class="fa-solid fa-star text-amber-400"></i>';
+        } else {
+          starsHtml += '<i class="fa-regular fa-star text-slate-600"></i>';
+        }
+      }
+      document.getElementById('kpiRatingStars').innerHTML = starsHtml;
+    }
+
+    // Table Injection
+    function updateTable(data) {
+      const tbody = document.getElementById('dataTableBody');
+      tbody.innerHTML = '';
+
+      // Group by destination
+      const destMap = {};
+      data.forEach(item => {
+        if (!destMap[item.destination]) {
+          destMap[item.destination] = {
+            destination: item.destination,
+            region: item.region,
+            visitors: 0,
+            dailySpendSum: 0,
+            hotelRateSum: 0,
+            occupancySum: 0,
+            ratingSum: 0,
+            count: 0
+          };
+        }
+        destMap[item.destination].visitors += item.visitors;
+        destMap[item.destination].dailySpendSum += item.dailySpend;
+        destMap[item.destination].hotelRateSum += item.hotelRate;
+        destMap[item.destination].occupancySum += item.occupancy;
+        destMap[item.destination].ratingSum += item.rating;
+        destMap[item.destination].count += 1;
+      });
+
+      const aggregated = Object.values(destMap).map(d => ({
+        destination: d.destination,
+        region: d.region,
+        totalVisitors: d.visitors,
+        avgDailySpend: d.dailySpendSum / d.count,
+        avgHotelRate: d.hotelRateSum / d.count,
+        avgOccupancy: d.occupancySum / d.count,
+        avgRating: d.ratingSum / d.count
+      })).sort((a, b) => b.totalVisitors - a.totalVisitors);
+
+      document.getElementById('tableRecordCount').innerText = `Exibindo ${aggregated.length} destino(s)`;
+
+      const maxVisitors = Math.max(...aggregated.map(a => a.totalVisitors), 1);
+
+      aggregated.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-800/50 transition border-b border-slate-800/60';
+
+        // Visitors Progress Bar Width
+        const pct = Math.round((row.totalVisitors / maxVisitors) * 100);
+
+        // Occupancy Badge color
+        let occBadgeClass = 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+        if (row.avgOccupancy >= 75) occBadgeClass = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+        else if (row.avgOccupancy < 65) occBadgeClass = 'bg-rose-500/10 text-rose-400 border-rose-500/20';
+
+        tr.innerHTML = `
+          <td class="py-3.5 px-4 font-semibold text-white flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${destinationColors[row.destination] || '#0ea5e9'}"></span>
+            ${row.destination}
+          </td>
+          <td class="py-3.5 px-4 text-slate-400 text-xs">${row.region}</td>
+          <td class="py-3.5 px-4 text-right">
+            <div class="font-bold text-white">${fmtNumber(row.totalVisitors)}</div>
+            <div class="w-full bg-slate-800 rounded-full h-1.5 mt-1 overflow-hidden">
+              <div class="bg-brand-500 h-1.5 rounded-full" style="width: ${pct}%"></div>
+            </div>
+          </td>
+          <td class="py-3.5 px-4 text-right font-medium text-slate-200">${fmtCurrency(row.avgDailySpend)}</td>
+          <td class="py-3.5 px-4 text-right font-medium text-slate-200">${fmtCurrency(row.avgHotelRate)}</td>
+          <td class="py-3.5 px-4 text-center">
+            <span class="px-2.5 py-1 rounded-full text-xs font-bold border ${occBadgeClass}">
+              ${fmtNumber(row.avgOccupancy)}%
+            </span>
+          </td>
+          <td class="py-3.5 px-4 text-center">
+            <div class="flex items-center justify-center gap-1 font-bold text-amber-400 text-xs">
+              <i class="fa-solid fa-star"></i> ${row.avgRating.toFixed(2)}
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Chart Updates
+    function updateCharts(data) {
+      // 1. Trend Chart (By Month)
+      const monthsPresent = [...new Set(data.map(d => d.month))].sort((a,b) => a-b);
+      const monthlyVisitors = monthsPresent.map(m => {
+        const items = data.filter(d => d.month === m);
+        return items.reduce((acc, curr) => acc + curr.visitors, 0);
+      });
+      const monthlyOcc = monthsPresent.map(m => {
+        const items = data.filter(d => d.month === m);
+        return items.length ? items.reduce((acc, curr) => acc + curr.occupancy, 0) / items.length : 0;
+      });
+
+      const monthLabels = monthsPresent.map(m => monthNames[m-1]);
+
+      if (chartTrend) chartTrend.destroy();
+      chartTrend = new Chart(document.getElementById('chartTrend'), {
+        type: 'bar',
+        data: {
+          labels: monthLabels,
+          datasets: [
+            {
+              type: 'bar',
+              label: 'Visitantes (mil)',
+              data: monthlyVisitors,
+              backgroundColor: 'rgba(14, 165, 233, 0.65)',
+              borderColor: '#0ea5e9',
+              borderWidth: 1,
+              borderRadius: 6,
+              yAxisID: 'y'
+            },
+            {
+              type: 'line',
+              label: 'Taxa de Ocupação (%)',
+              data: monthlyOcc,
+              borderColor: '#f59e0b',
+              backgroundColor: 'rgba(245, 158, 11, 0.15)',
+              borderWidth: 3,
+              tension: 0.35,
+              pointBackgroundColor: '#f59e0b',
+              pointRadius: 4,
+              yAxisID: 'y1'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { labels: { color: '#94a3b8', font: { family: 'Inter', size: 11 } } },
+            tooltip: { mode: 'index', intersect: false }
+          },
+          scales: {
+            x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+            y: { 
+              type: 'linear', 
+              position: 'left',
+              ticks: { color: '#94a3b8' }, 
+              grid: { color: 'rgba(255,255,255,0.05)' },
+              title: { display: true, text: 'Visitantes (mil)', color: '#94a3b8' }
+            },
+            y1: { 
+              type: 'linear', 
+              position: 'right', 
+              ticks: { color: '#f59e0b', callback: v => v + '%' }, 
+              grid: { drawOnChartArea: false },
+              title: { display: true, text: 'Ocupação (%)', color: '#f59e0b' }
+            }
+          }
+        }
+      });
+
+      // 2. Region Chart
+      const regionMap = {};
+      data.forEach(d => {
+        regionMap[d.region] = (regionMap[d.region] || 0) + d.visitors;
+      });
+
+      if (chartRegion) chartRegion.destroy();
+      chartRegion = new Chart(document.getElementById('chartRegion'), {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(regionMap),
+          datasets: [{
+            data: Object.values(regionMap),
+            backgroundColor: ['#0ea5e9', '#f59e0b', '#10b981', '#8b5cf6'],
+            borderWidth: 2,
+            borderColor: '#0f172a'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { color: '#94a3b8', font: { family: 'Inter', size: 11 } } }
+          },
+          cutout: '65%'
+        }
+      });
+
+      // Aggregations per Destination
+      const destAgg = {};
+      data.forEach(d => {
+        if (!destAgg[d.destination]) {
+          destAgg[d.destination] = { visitors: 0, dailySpendSum: 0, hotelRateSum: 0, ratingSum: 0, count: 0 };
+        }
+        destAgg[d.destination].visitors += d.visitors;
+        destAgg[d.destination].dailySpendSum += d.dailySpend;
+        destAgg[d.destination].hotelRateSum += d.hotelRate;
+        destAgg[d.destination].ratingSum += d.rating;
+        destAgg[d.destination].count += 1;
+      });
+
+      const dests = Object.keys(destAgg);
+      const destVisitors = dests.map(k => destAgg[k].visitors);
+      const destAvgSpend = dests.map(k => destAgg[k].dailySpendSum / destAgg[k].count);
+      const destAvgHotel = dests.map(k => destAgg[k].hotelRateSum / destAgg[k].count);
+      const destAvgRating = dests.map(k => destAgg[k].ratingSum / destAgg[k].count);
+
+      // 3. Ranking Chart
+      if (chartRanking) chartRanking.destroy();
+      chartRanking = new Chart(document.getElementById('chartRanking'), {
+        type: 'bar',
+        data: {
+          labels: dests,
+          datasets: [{
+            label: 'Visitantes (mil)',
+            data: destVisitors,
+            backgroundColor: dests.map(d => destinationColors[d] || '#0ea5e9'),
+            borderRadius: 6
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+            y: { ticks: { color: '#f1f5f9' }, grid: { display: false } }
+          }
+        }
+      });
+
+      // 4. Financial Chart
+      if (chartFinancial) chartFinancial.destroy();
+      chartFinancial = new Chart(document.getElementById('chartFinancial'), {
+        type: 'bar',
+        data: {
+          labels: dests,
+          datasets: [
+            {
+              label: 'Gasto Diário (R$)',
+              data: destAvgSpend,
+              backgroundColor: '#10b981',
+              borderRadius: 4
+            },
+            {
+              label: 'Diária Média (R$)',
+              data: destAvgHotel,
+              backgroundColor: '#8b5cf6',
+              borderRadius: 4
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top', labels: { color: '#94a3b8', font: { family: 'Inter', size: 11 } } }
+          },
+          scales: {
+            x: { ticks: { color: '#94a3b8' }, grid: { display: false } },
+            y: { ticks: { color: '#94a3b8', callback: v => 'R$' + v }, grid: { color: 'rgba(255,255,255,0.05)' } }
+          }
+        }
+      });
+
+      // 5. Scatter Matrix Chart (Spend vs Rating)
+      const matrixData = dests.map(d => ({
+        x: destAgg[d].dailySpendSum / destAgg[d].count,
+        y: destAgg[d].ratingSum / destAgg[d].count,
+        r: Math.max(6, Math.min(18, destAgg[d].visitors / 25)),
+        dest: d
+      }));
+
+      if (chartMatrix) chartMatrix.destroy();
+      chartMatrix = new Chart(document.getElementById('chartMatrix'), {
+        type: 'bubble',
+        data: {
+          datasets: [{
+            label: 'Destinos',
+            data: matrixData,
+            backgroundColor: matrixData.map(d => destinationColors[d.dest] || '#0ea5e9')
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(ctx) {
+                  const raw = ctx.raw;
+                  return `${raw.dest}: Gasto R$ ${raw.x.toFixed(2)} | Nota ${raw.y.toFixed(2)}`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: { 
+              ticks: { color: '#94a3b8', callback: v => 'R$' + v }, 
+              grid: { color: 'rgba(255,255,255,0.05)' },
+              title: { display: true, text: 'Gasto Médio Diário (R$)', color: '#94a3b8' }
+            },
+            y: { 
+              ticks: { color: '#94a3b8' }, 
+              grid: { color: 'rgba(255,255,255,0.05)' },
+              title: { display: true, text: 'Avaliação Média (1-5)', color: '#94a3b8' }
+            }
+          }
+        }
+      });
+    }
+
+    // Export Data to CSV
+    function exportToCSV() {
+      const data = getFilteredData();
+      if (!data.length) return;
+
+      let csv = 'Mês,Destino,Região,Visitantes (mil),Gasto Diário (R$),Diária Média (R$),Ocupação (%),Avaliação\n';
+      data.forEach(row => {
+        csv += `${row.month},"${row.destination}","${row.region}",${row.visitors},${row.dailySpend},${row.hotelRate},${row.occupancy},${row.rating}\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'monitoramento_turismo_brasil_2026.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // Initial Load
+    window.onload = function() {
+      onFilterChange();
+    };
+  </script>
+</body>
+</html>
